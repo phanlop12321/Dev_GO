@@ -96,9 +96,9 @@ func (db *DB) GetUserByUsername(username string) (*model.User, error) {
 		Password: user.Password,
 	}, nil
 }
-func (db *DB) GetIncome(id uint) (*model.Income, error) {
+func (db *DB) GetIncome() (*model.Income, error) {
 	var income Income
-	if err := db.db.First(&income, id).Error; err != nil {
+	if err := db.db.First(&income, 1).Error; err != nil {
 		return nil, err
 	}
 	return &model.Income{

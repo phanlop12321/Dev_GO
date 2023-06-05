@@ -21,7 +21,9 @@ func main() {
 	}
 
 	r := gin.Default()
-	r.GET("/income", handler.GetIncome(db))
+	r.GET("/income", handler.Getincome(db))
+	r.POST("/register", handler.Register(db))
+	r.POST("/login", handler.Login(db))
 
 	r.Run(":8080")
 
