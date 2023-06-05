@@ -3,6 +3,7 @@ package db
 import (
 	"log"
 
+	"github.com/ehudthelefthand/course/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -71,4 +72,27 @@ type User struct {
 	ID       uint   `gorm:"primaryKey"`
 	Username string `gorm:"uniqueIndex"`
 	Password string
+}
+
+func (db *DB) CreateUser(u *model.User) error {
+	user := User{
+		Username: u.Username,
+		Password: u.Password,
+	}
+	if err := db.db.Create(&user).Error; err != nil {
+		return err
+	}
+	u.ID = user.ID
+	return nil
+}
+func (db *DB) GetUserByUsername(username string) (*model.User, error) {
+	var user User
+	if err := db.db.Where("username = ?", username).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &model.User{
+		ID:       user.ID,
+		Username: user.Username,
+		Password: user.Password,
+	}, nil
 }
