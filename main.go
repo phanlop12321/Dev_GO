@@ -3,7 +3,9 @@ package main
 import (
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"github.com/phanlop12321/Dev_GO/db"
+	"github.com/phanlop12321/Dev_GO/handler"
 )
 
 func main() {
@@ -11,11 +13,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err := db.Reset(); err != nil {
-		log.Fatal(err)
-	}
+	// if err := db.Reset(); err != nil {
+	// 	log.Fatal(err)
+	// }
 	if err := db.AutoMigrate(); err != nil {
 		log.Fatal(err)
 	}
+
+	r := gin.Default()
+	r.GET("/income", handler.GetIncome(db))
+
+	r.Run(":8080")
 
 }

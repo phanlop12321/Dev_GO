@@ -3,7 +3,7 @@ package db
 import (
 	"log"
 
-	"github.com/ehudthelefthand/course/model"
+	"github.com/phanlop12321/Dev_GO/model"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -94,5 +94,17 @@ func (db *DB) GetUserByUsername(username string) (*model.User, error) {
 		ID:       user.ID,
 		Username: user.Username,
 		Password: user.Password,
+	}, nil
+}
+func (db *DB) GetIncome(id uint) (*model.Income, error) {
+	var income Income
+	if err := db.db.First(&income, id).Error; err != nil {
+		return nil, err
+	}
+	return &model.Income{
+		ID:          income.ID,
+		IDUser:      income.IDUser,
+		Description: income.Description,
+		Money:       income.Money,
 	}, nil
 }

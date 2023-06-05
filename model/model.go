@@ -5,3 +5,9 @@ type User struct {
 	Username string
 	Password string
 }
+type Income struct {
+	ID          uint
+	IDUser      string
+	Description string
+	Money       uint
+}
