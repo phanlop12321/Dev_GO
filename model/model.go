@@ -10,4 +10,5 @@ type Income struct {
 	IDUser      string
 	Description string
 	Money       uint
+	Status      bool
 }

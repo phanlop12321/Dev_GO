@@ -26,8 +26,6 @@ func NewDB() (*DB, error) {
 func (db *DB) Reset() error {
 	err := db.db.Migrator().DropTable(
 		&Savings{},
-		&Income{},
-		&Expenses{},
 		&User{},
 	)
 	if err != nil {
@@ -38,8 +36,6 @@ func (db *DB) Reset() error {
 func (db *DB) AutoMigrate() error {
 	err := db.db.Migrator().AutoMigrate(
 		&Savings{},
-		&Income{},
-		&Expenses{},
 		&User{},
 	)
 	if err != nil {
@@ -49,29 +45,44 @@ func (db *DB) AutoMigrate() error {
 }
 
 type Savings struct {
-	ID            uint `gorm:"primaryKey"`
-	IDUser        string
-	Total         uint
-	IncomeTotal   uint
-	ExpensesTotal uint
-}
-
-type Income struct {
 	ID          uint `gorm:"primaryKey"`
 	IDUser      string
 	Description string
 	Money       uint
-}
-type Expenses struct {
-	ID          uint `gorm:"primaryKey"`
-	IDUser      string
-	Description string
-	Money       uint
+	Status      bool
 }
 type User struct {
 	ID       uint   `gorm:"primaryKey"`
 	Username string `gorm:"uniqueIndex"`
 	Password string
+}
+
+func (db *DB) CreateIncome(i *model.Income) error {
+	income := Savings{
+		IDUser:      i.IDUser,
+		Description: i.Description,
+		Money:       i.Money,
+		Status:      true,
+	}
+	if err := db.db.Create(&income).Error; err != nil {
+		return err
+	}
+	i.ID = income.ID
+	return nil
+}
+
+func (db *DB) CreateExpenses(i *model.Income) error {
+	income := Savings{
+		IDUser:      i.IDUser,
+		Description: i.Description,
+		Money:       i.Money,
+		Status:      false,
+	}
+	if err := db.db.Create(&income).Error; err != nil {
+		return err
+	}
+	i.ID = income.ID
+	return nil
 }
 
 func (db *DB) CreateUser(u *model.User) error {
@@ -96,15 +107,57 @@ func (db *DB) GetUserByUsername(username string) (*model.User, error) {
 		Password: user.Password,
 	}, nil
 }
-func (db *DB) GetIncome() (*model.Income, error) {
-	var income Income
-	if err := db.db.First(&income, 1).Error; err != nil {
+func (db *DB) GetIncome() ([]model.Income, error) {
+	var income []Savings
+	if err := db.db.Find(&income, "Status = ?", true).Error; err != nil {
+		return nil, err
+	}
+	result := []model.Income{}
+	for _, inc := range income {
+		result = append(result, model.Income{
+			ID:          inc.ID,
+			IDUser:      inc.IDUser,
+			Description: inc.Description,
+			Money:       inc.Money,
+			Status:      true,
+		})
+	}
+	return result, nil
+
+}
+func (db *DB) GetExpenses() ([]model.Income, error) {
+	var expenses []Savings
+	if err := db.db.Find(&expenses, "Status = ?", false).Error; err != nil {
+		return nil, err
+	}
+	result := []model.Income{}
+	for _, inc := range expenses {
+		result = append(result, model.Income{
+			ID:          inc.ID,
+			IDUser:      inc.IDUser,
+			Description: inc.Description,
+			Money:       inc.Money,
+			Status:      false,
+		})
+	}
+	return result, nil
+
+}
+
+func (db *DB) DeletSaveByID(id uint) error {
+	var save Savings
+	if err := db.db.Where("id = ?", id).Delete(&save).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *DB) GetSaveByID(id uint) (*model.Income, error) {
+	var save Savings
+	if err := db.db.Where("id = ?", id).First(&save).Error; err != nil {
 		return nil, err
 	}
 	return &model.Income{
-		ID:          income.ID,
-		IDUser:      income.IDUser,
-		Description: income.Description,
-		Money:       income.Money,
+		ID: save.ID,
 	}, nil
 }
